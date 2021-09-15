@@ -7,8 +7,12 @@ const path = require('path');
 const ExpressError = require('./utils/ExpressError');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
+const passport = require('passport');
+const LocalStrategy = required('passport-local');
+
 const campgroundsRouter = require('./routes/campgrounds');
 const reviewsRouter = require('./routes/reviews');
+const User = require('./routes/user');
 
 
 // App
@@ -36,11 +40,20 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash());
 
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new LocalStrategy(User.authenticate()))
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req, res, next) => {
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
 });
+
+app.get('/fakeUser')
 
 app.use('/campgrounds', campgroundsRouter);
 app.use('/campgrounds/:id/reviews', reviewsRouter);
